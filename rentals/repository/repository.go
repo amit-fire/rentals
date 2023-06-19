@@ -16,7 +16,7 @@ func FindRentals() []m.Rental {
 	}
 	defer connection.Close()
 
-	query := `select id, name, description, type, vehicle_make, vehicle_model, vehicle_year, vehicle_length, sleeps, price_per_day, primary_image_url, home_city, home_state, home_zip, home_country, lat, lng from rentals`
+	query := `select r.id, name, description, type, vehicle_make, vehicle_model, vehicle_year, vehicle_length, sleeps, price_per_day, primary_image_url, home_city, home_state, home_zip, home_country, lat, lng, u.id, first_name, last_name FROM rentals r INNER JOIN users u ON user_id = u.id ORDER BY r.id ASC`
 	log.Println("executing query ", query)
 	rows, err := connection.Query(query)
 	if err != nil {
@@ -27,14 +27,31 @@ func FindRentals() []m.Rental {
 	var rentals []m.Rental
 
 	for rows.Next() {
-		var r m.Rental
-		err := rows.Scan(&r.ID, &r.Name, &r.Description, &r.Type, &r.Make, &r.Model, &r.Year, &r.Length, &r.Sleeps, &r.Price, &r.PrimaryImageURL, &r.City, &r.State, &r.Zip, &r.Country, &r.Latitude, &r.Longitude)
+		var r m.DBRental
+		var user m.User
+		err := rows.Scan(&r.ID, &r.Name, &r.Description, &r.Type, &r.Make, &r.Model, &r.Year, &r.Length, &r.Sleeps, &r.Price, &r.PrimaryImageURL, &r.City, &r.State, &r.Zip, &r.Country, &r.Latitude, &r.Longitude, &user.ID, &user.FirstName, &user.LastName)
 
 		if err != nil {
 			log.Fatal("error scanning rows." + err.Error())
 		}
 
-		rentals = append(rentals, r)
+		rental := m.Rental{
+			ID:              r.ID,
+			Name:            r.Name,
+			Description:     r.Description,
+			Type:            r.Type,
+			Make:            r.Make,
+			Model:           r.Model,
+			Year:            r.Year,
+			Length:          r.Length,
+			Sleeps:          r.Sleeps,
+			Price:           m.Price{Day: r.Price},
+			PrimaryImageURL: r.PrimaryImageURL,
+			Location:        m.Location{City: r.City, State: r.State, Zip: r.Zip, Country: r.Country, Latitude: r.Latitude, Longitude: r.Longitude},
+			User:            m.User{ID: user.ID, FirstName: user.FirstName, LastName: user.LastName},
+		}
+
+		rentals = append(rentals, rental)
 	}
 
 	return rentals
