@@ -8,7 +8,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func FindRentals() []m.Rental {
+func FindRentals(query string) []m.Rental {
 	// TODO: externalize database properties
 	connection, err := sql.Open("postgres", "postgres://postgres:postgres@localhost:5432/rentals?sslmode=disable")
 	if err != nil {
@@ -16,7 +16,6 @@ func FindRentals() []m.Rental {
 	}
 	defer connection.Close()
 
-	query := `select r.id, name, description, type, vehicle_make, vehicle_model, vehicle_year, vehicle_length, sleeps, price_per_day, primary_image_url, home_city, home_state, home_zip, home_country, lat, lng, u.id, first_name, last_name FROM rentals r INNER JOIN users u ON user_id = u.id ORDER BY r.id ASC`
 	log.Println("executing query ", query)
 	rows, err := connection.Query(query)
 	if err != nil {

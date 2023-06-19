@@ -17,6 +17,7 @@ func startServer() {
 
 	router := gin.Default()
 	router.GET("/rentals", c.GetRentals)
+	router.GET("/rentals/:id", c.GetRental)
 
 	router.Run(server)
 }
