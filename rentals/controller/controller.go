@@ -11,7 +11,13 @@ import (
 )
 
 func GetRentals(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, r.FindRentals(q.DefaultQuery()))
+	ids := c.Query("ids")
+
+	if ids == "" {
+		c.IndentedJSON(http.StatusOK, r.FindRentals(q.DefaultQuery()))
+	} else {
+		c.IndentedJSON(http.StatusOK, r.FindRentals(q.IDQuery(ids)))
+	}
 }
 
 func GetRental(c *gin.Context) {
